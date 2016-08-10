@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Interactive sudoku prover</title>
+	<style type="text/css">
+	.sudoku td, .sudoku {
+		border: 1px solid black;
+		border-spacing: 0px;
+	}
+	.sudoku td {
+		padding: 6px;
+	}
+	.sudoku td:nth-child(3n) {
+		border-right:2px solid black;
+	}
+	.sudoku td:nth-child(3n + 1) {
+		border-left: 2px solid black;
+	}
+	.sudoku tr:nth-child(3n) td {
+		border-bottom:2px solid black;
+	}
+	.sudoku tr:nth-child(3n + 1) td {
+		border-top:2px solid black;
+	}
+
+	input.mini{width: 1em; padding:0px;}
+
+	input.mini {
+            background:none!important;
+            background-color: rgba(255,255,255,0.8);
+            border:none!important;
+            border-color:none!important;
+            text-shadow:none!important;
+            box-shadow:none!important;
+        }
+
+     button.current {
+     	border: 5px solid green;
+     }
+
+     td.selected-preset, td.selected-preset .mini {background-color: #a0fe84 !important;}
+     td.selected-main, td.selected-main .mini{background-color: #ffd28f !important;}
+	</style>
+
+
+	<script type="text/javascript" src="sha256.js"></script>
+	<script type="text/javascript" src="tables.js"></script>
+	<script type="text/javascript" src="js.js"></script>
+</head>
+<body>
+<center>
+<h2>Interactive sudoku zero-knowledge prover/verifier</h2>
+<h4>Sudoku problem</h4>
+	<script type=text/javascript>
+		genTable("preset")
+	</script>
+
+<button id=start onclick="init()">Start!</button>
+<button onclick="prefill()">Fill with known problem/solution</button>
+<button id="auto" onclick="runAuto()" disabled>Run automatically</button><br>
+<button id="reset" onclick="reset()">Reset</button><br>
+<h3>Probability of correctness: <span id=probability>0</span></h3>
+</center>
+
+<br>
+
+	<div style="width: 49%; float:left; border:1px solid black;">
+		<h3>Verifier</h3>
+		<div style="width: 79%; float:left">
+	<h4>Revealed values</h4>
+	<script type=text/javascript>genTable("reveal-val")</script>
+	<br>
+	<table border=0>
+	<tr><td><h4>Nonce</h4></td><td><h4>Hash (hover to see full contents)</h4></td></tr>
+	<tr>
+	<td><script type=text/javascript>genTable("reveal-nonce")</script></td>
+	<td><script type=text/javascript>genTable("reveal-sha")</script></td>
+	</tr></table>
+		</div>
+		<div style="float:right; width: 20%">
+
+			<select id="type" onchange=colorCells()>
+				<option value="row">Row</option>
+				<option value="column">Column</option>
+				<option value="square">Subsquare</option>
+			</select><br>
+			Enter 0-8 for selecting the corresponding segment.<br>
+			<input id="segment" size="2" value=0 onkeyup="colorCells()" onchange="colorCells()"></input><br>
+			<br>
+			<button id="reveal" onclick="reveal()">Reveal</button><br>
+			<button id="verify" onclick="verify()">Verify</button><br><br>
+		</div>
+	</div>
+
+
+	<div style="width: 49%; float:right; border:1px solid black;">
+		
+		<h3>Prover</h3>
+		<div style="width: 79%; float:left">
+	<h4>(Permuted) solution</h4>
+	<script type=text/javascript>genTable("in-val")</script>
+	<br>
+	<table border=0>
+	<tr><td><h4>Nonce</h4></td><td><h4>Hash (hover to see full contents)</h4></td></tr>
+	<tr>
+	<td><script type=text/javascript>genTable("in-nonce")</script></td>
+	<td><script type=text/javascript>genTable("in-sha")</script></td>
+	</tr></table>
+		</div>
+		<div style="float:right; width: 20%">
+			<button id="permute" onclick="permute()">Permute</button><br>
+			<button id="nonce" onclick="generateRandomNonces()">Populate Nonces</button><br>
+			<button id="hash" onclick="generateHashes()">Generate Hash</button><br>
+			<button id="send" onclick="send()">Send</button><br>
+		</div>	
+	</div>
+	<div style="clear:both"></div>
+
+<script type="text/javascript">
+foreach('reveal-nonce',(g)=> {g.onmouseover = function() {this.title = this.value}})
+foreach('reveal-sha',(g)=> {g.onmouseover = function() {this.title = this.value}})
+foreach('in-sha',(g)=> {g.onmouseover = function() {this.title = this.value}})
+foreach('in-nonce',(g)=> {g.onmouseover = function() {this.title = this.value}})
+reset();
+</script>
+</body>
+</html>

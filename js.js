@@ -224,6 +224,7 @@ function getCellsForReveal() {
 	var segment = parseInt(document.getElementById('segment').value);
 	let revealedPresets = new Set();
 	let ret = [];
+	let isPreset = false;
 	if(type == 'row'){
 		for(let j=0;j<dim;++j){
 			let i = segment;
@@ -254,6 +255,7 @@ function getCellsForReveal() {
 			}
 		}
 	} else if(type == 'preset'){
+		isPreset = true;
 		for(let i=0; i<dim;i++) {
 			for(let j=0;j<dim;j++) {
 				if(preset[i][j] != "") {
@@ -268,7 +270,7 @@ function getCellsForReveal() {
 			ret.push({"i": i, "j": j});
 		}
 	})
-	return {"all" : ret, "mainOnly": mainOnly, revealedPresets: revealedPresets};
+	return {"all" : ret, "mainOnly": mainOnly, revealedPresets: revealedPresets, isPreset: isPreset};
 	
 }
 function reveal(){
@@ -307,21 +309,46 @@ function verify(){
 		let fhash = hash(nonce, val);
 		let expectedhash = access('reveal-sha', i, j).value;
 		if(fhash != expectedhash) {
-			debugger;
 			error("Expected hash "+expectedhash+ " found hash "+fhash)
 			return
 		}
 	}
-	let digits = new Set();
-	for(let i =1;i<10;i++) {
-		digits.add(i+"");
-	}
-	for(let cell of cells.mainOnly) {
-		digits.delete(access('reveal-val', cell.i, cell.j).value);
-	}
+	if (cells.isPreset) {
+		let permute = new Map();
+		for (let cell of cells.mainOnly) {
+			let i = cell.i; let j = cell.j;
+			let pre = preset[i][j];
+			let revealed = access('reveal-val', i, j).value;
+			if (permute.has(pre)) {
+				if (revealed != permute.get(pre).val) {
+					error(`Permuted value of preert ${pre} at (${i}, ${j}) is ${revealed}, which does not match with previously found value ${permute.get(pre).val} at (${permute.get(pre).i}, ${permute.get(pre).j})`);
+				}
+			} else {
+				permute.set(pre, {val: revealed, i: i, j: j});
+			}
+		}
+		let codomain = new Map();
+		for (let val of permute) {
+			let v = val[1];
+			if (codomain.has(v.val)) {
+				let old = codomain.get(v.val);
+				error(`Permuted value of preset ${preset[v.i][v.j]} at (${v.i}, ${v.j}) is ${v.val}, but this value is already the permuted value of preset ${preset[old.i][old.j]} at (${old.i}, ${old.j})`)
+			} else {
+				codomain.set(v.val, v);
+			}
+		}
+	} else {
+		let digits = new Set();
+		for(let i =1;i<10;i++) {
+			digits.add(i+"");
+		}
+		for(let cell of cells.mainOnly) {
+			digits.delete(access('reveal-val', cell.i, cell.j).value);
+		}
 
-	if (digits.size != 0) {
-		alert("Digit(s) "+ Array.from(digits.values()).toString()+ " not found");
+		if (digits.size != 0) {
+			error("Digit(s) "+ Array.from(digits.values()).toString()+ " not found");
+		}
 	}
 
 	let presetMap = new Map();

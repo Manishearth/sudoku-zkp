@@ -80,7 +80,6 @@ function updateState(newState) {
 			colorCells()
 			prepareNextState("reveal");
 			document.getElementById("type").disabled=false;
-			document.getElementById("segment").disabled=false;
 			break;
 		case "revealed":
 			prepareNextState("verify");
@@ -101,7 +100,7 @@ function prepareNextState(button) {
 		document.getElementById(button).className = "current";
 		if (state == "sent") {
 			document.getElementById("segment").value = Math.floor(9*Math.random());
-			document.getElementById("type").value = ["row","column","square"][Math.floor(3*Math.random())];
+			document.getElementById("type").value = ["row","column","square","preset"][Math.floor(4*Math.random())];
 			colorCells();
 		}
 		if(state == "verified") {
@@ -254,6 +253,14 @@ function getCellsForReveal() {
 				ret.push({"i": i, "j": j});
 			}
 		}
+	} else if(type == 'preset'){
+		for(let i=0; i<dim;i++) {
+			for(let j=0;j<dim;j++) {
+				if(preset[i][j] != "") {
+					ret.push({"i": i, "j": j});
+				}
+			}
+		}
 	}
 	let mainOnly = ret.slice(); // clone the array
 	foreachA(preset, (g, i, j) => {
@@ -362,6 +369,7 @@ function colorCells() {
 		access('in-val',cell.i,cell.j).parentNode.className = "selected-main";
 		access('preset',cell.i,cell.j).parentNode.className = "selected-main";
 	}
+	document.getElementById("segment").disabled=document.getElementById("type").value === 'preset';
 }
 
 function clearCells() {
